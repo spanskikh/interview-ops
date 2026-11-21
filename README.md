@@ -1,5 +1,7 @@
 # interview-ops — Grounded Hybrid RAG & Z3 Fact-Checker
 
+
+> **Change Management:** See [`CHANGELOG.md`](CHANGELOG.md) for formal Change Requests (`CR`), mitigated risks, and QA verification evidence.
 Distributed pipeline for tailored CV generation with formal anti-hallucination guarantees. Combines hybrid retrieval (`pgvector` cosine distance + PostgreSQL `tsvector` Reciprocal Rank Fusion on `rhino`) with symbolic Z3 verification against a Single Source of Truth (SSOT) on `hippo`.
 
 > Part of the [`sandbox-init`](https://github.com/spanskikh/sandbox-init) neuro-symbolic cluster. See [`docs/ARCHITECTURE.md`](https://github.com/spanskikh/sandbox-init/blob/main/docs/ARCHITECTURE.md) for system design and ADRs.
