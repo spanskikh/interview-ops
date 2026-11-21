@@ -1,0 +1,20 @@
+services:
+  rag-qa:
+    build: .
+    image: interview-ops-rag:latest
+    pull_policy: never
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - default
+      - sandbox_net
+    mem_limit: 1g
+
+networks:
+  sandbox_net:
+    external: true
+    name: sandbox-init_default
