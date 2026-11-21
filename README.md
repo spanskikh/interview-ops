@@ -1,9 +1,10 @@
 # interview-ops — Grounded Hybrid RAG & Z3 Fact-Checker
 
-Распределённый конвейер генерации таргетированных резюме с формальной защитой от галлюцинаций. Объединяет гибридный поиск (`pgvector` + `tsvector` RRF на `rhino`) и символическую проверку утверждений против единого источника истины (SSOT) на `hippo`.
+Distributed pipeline for tailored CV generation with formal anti-hallucination guarantees. Combines hybrid retrieval (`pgvector` cosine distance + PostgreSQL `tsvector` Reciprocal Rank Fusion on `rhino`) with symbolic Z3 verification against a Single Source of Truth (SSOT) on `hippo`.
 
-## Распределённая архитектура (`hippo` <-> `rhino`)
+> Part of the [`sandbox-init`](https://github.com/spanskikh/sandbox-init) neuro-symbolic cluster. See [`docs/ARCHITECTURE.md`](https://github.com/spanskikh/sandbox-init/blob/main/docs/ARCHITECTURE.md) for system design and ADRs.
 
+## Distributed Architecture (`hippo` <-> `rhino`)
 ```mermaid
 flowchart LR
     subgraph hippo [Node: hippo - Compute & Verification]
@@ -21,17 +22,27 @@ flowchart LR
     Z3 -->|SAT: Grounded Claims + Honest Gaps| OUT[Verified Output]
 ```
 
-## Инварианты фактологической точности
-* **Referential Grounding:** каждый `claim` обязан ссылаться на существующий `source_record_id` из SSOT.
-* **Chronological & Entity Lock:** название компании, `start_year` и `end_year` проверяются на строгое равенство записи SSOT.
-* **Skill Subset Invariant:** множество `claimed_skills` проверяется на включение в стек конкретного этапа опыта (`claimed <= SSOT`); неподтверждённые требования вакансии честно выносятся в `missing_required_skills`.
+## Factuality Invariants (Z3)
+* **Referential Grounding:** Every generated `claim` must reference a valid `source_record_id` in the retrieved SSOT.
+* **Chronological & Entity Lock:** Company name, `start_year`, and `end_year` must match the SSOT record identically.
+* **Skill Subset Invariant:** Claimed skills must form a subset of that role's verified stack (`claimed_skills <= ssot.skills`); unverified requirements are separated into `missing_required_skills`.
 
-## MCP-инструменты (`FastMCP` / `stdio`)
-* `hybrid_search_ssot` — гибридный поиск (Reciprocal Rank Fusion поверх cosine distance и `ts_rank_cd`) по базе опыта.
-* `generate_verified_cv_claims` — извлечение релевантного опыта и синтез резюме с Z3-проверкой фактов.
-* `audit_cv_proposal` — автономный Z3-аудит сгенерированных утверждений против SSOT.
+## Sample CEGIS Execution
+```text
+Hybrid RRF Top-2 from rhino pgvector:
+  - exp_deutsche_bank_2025 (Deutsche Bank (Berlin)) RRF=0.0164
+  - exp_infineon_2024 (Infineon Technologies (Munich)) RRF=0.0161
+CEGIS Converged: True in 2 iter(s)
+  Verified Claims: ['exp_deutsche_bank_2025', 'exp_infineon_2024']
+  Honest Skill Gaps: ['Kubernetes']
+```
 
-## Запуск и QA-гейт
+## MCP Tools (`FastMCP` / `stdio`)
+* `hybrid_search_ssot` — Hybrid RRF search (`pgvector` cosine + `ts_rank_cd`) over SSOT experience records.
+* `generate_verified_cv_claims` — Retrieves relevant experience and synthesizes Z3-verified CV claims.
+* `audit_cv_proposal` — Standalone Z3 audit of generated resume claims against SSOT records.
+
+## Quickstart & QA Gate
 ```bash
 docker compose build rag-qa
 docker compose run --rm rag-qa sh -c "ruff check src tests && mypy src tests && pytest -v"
