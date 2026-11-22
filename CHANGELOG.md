@@ -2,6 +2,66 @@
 
 All notable changes and formal Change Requests (CRs) for `interview-ops` are documented in this file.
 
+## [0.6.0] - 2026-11-22 — CR-014, CR-015 & CR-016: Pre-Public Hygiene Gate, Portfolio Sync & Public CI / CycloneDX Activation
+### Objective & Risk Mitigated
+- **Closed Residual Risk:** Enforced automated pre-public secret/PII hygiene checks, synchronized `README.md` and `docs/ARCHITECTURE.md` with live hybrid RRF IR metrics (`Recall@3 = 0.9375`, `MRR = 1.0000`, `p95 = 72.217 ms`), and activated GitHub Actions CI + `CycloneDX` SBOM generation.
+- **Traceability:** Branches `feat/cr-014-release-hygiene-gate` (`e75e059`), `feat/cr-015-portfolio-landing-sync` (`4d3c433`), and `CR-016` CI promotion merged via `--no-ff`; releases `v0.6.0`.
+
+### Added
+- `tests/test_release_hygiene.py`: Pre-public tracked-file secret/PII scanner and CI readiness assertions.
+- `docs/ci/ci.yml` -> `.github/workflows/ci.yml` & `scripts/publish_to_github.sh`: Automated CI verification and `CycloneDX` SBOM artifact generation.
+- `README.md` & `docs/ARCHITECTURE.md`: Added empirical hybrid RRF retrieval benchmark table.
+
+### Verification Evidence
+- `./scripts/run_logged.sh cr015_ruff`: `All checks passed!`
+- `./scripts/run_logged.sh cr015_mypy`: `Success: no issues found in 14 source files`
+- `./scripts/run_logged.sh cr015_pytest`: `27 passed, 2 deselected`
+
+## [0.6.0] - 2026-11-22 — CR-014, CR-015 & CR-016: Pre-Public Hygiene Gate, Portfolio Sync & Public CI / CycloneDX Activation
+### Objective & Risk Mitigated
+- **Closed Residual Risk:** Enforced automated pre-public secret/PII hygiene checks, synchronized `README.md` and `docs/ARCHITECTURE.md` with live hybrid RRF IR metrics (`Recall@3 = 0.9375`, `MRR = 1.0000`, `p95 = 72.217 ms`), and activated GitHub Actions CI + `CycloneDX` SBOM generation.
+- **Traceability:** Branches `feat/cr-014-release-hygiene-gate` (`e75e059`), `feat/cr-015-portfolio-landing-sync` (`4d3c433`), and `CR-016` CI promotion merged via `--no-ff`; releases `v0.6.0`.
+
+### Added
+- `tests/test_release_hygiene.py`: Pre-public tracked-file secret/PII scanner and CI readiness assertions.
+- `docs/ci/ci.yml` -> `.github/workflows/ci.yml` & `scripts/publish_to_github.sh`: Automated CI verification and `CycloneDX` SBOM artifact generation.
+- `README.md` & `docs/ARCHITECTURE.md`: Added empirical hybrid RRF retrieval benchmark table.
+
+### Verification Evidence
+- `./scripts/run_logged.sh cr015_ruff`: `All checks passed!`
+- `./scripts/run_logged.sh cr015_mypy`: `Success: no issues found in 14 source files`
+- `./scripts/run_logged.sh cr015_pytest`: `27 passed, 2 deselected`
+
+## [0.6.0] - 2026-11-22 — CR-014, CR-015 & CR-016: Pre-Public Hygiene Gate, Portfolio Sync & Public CI / CycloneDX Activation
+### Objective & Risk Mitigated
+- **Closed Residual Risk:** Enforced automated pre-public secret/PII hygiene checks, synchronized `README.md` and `docs/ARCHITECTURE.md` with live hybrid RRF IR metrics (`Recall@3 = 0.9375`, `MRR = 1.0000`, `p95 = 72.217 ms`), and activated GitHub Actions CI + `CycloneDX` SBOM generation.
+- **Traceability:** Branches `feat/cr-014-release-hygiene-gate` (`e75e059`), `feat/cr-015-portfolio-landing-sync` (`4d3c433`), and `CR-016` CI promotion merged via `--no-ff`; releases `v0.6.0`.
+
+### Added
+- `tests/test_release_hygiene.py`: Pre-public tracked-file secret/PII scanner and CI readiness assertions.
+- `docs/ci/ci.yml` -> `.github/workflows/ci.yml` & `scripts/publish_to_github.sh`: Automated CI verification and `CycloneDX` SBOM artifact generation.
+- `README.md` & `docs/ARCHITECTURE.md`: Added empirical hybrid RRF retrieval benchmark table.
+
+### Verification Evidence
+- `./scripts/run_logged.sh cr015_ruff`: `All checks passed!`
+- `./scripts/run_logged.sh cr015_mypy`: `Success: no issues found in 14 source files`
+- `./scripts/run_logged.sh cr015_pytest`: `27 passed, 2 deselected`
+
+## [0.6.0] - 2026-11-22 — CR-014, CR-015 & CR-016: Pre-Public Hygiene Gate, Portfolio Sync & Public CI / CycloneDX Activation
+### Objective & Risk Mitigated
+- **Closed Residual Risk:** Enforced automated pre-public secret/PII hygiene checks, synchronized `README.md` and `docs/ARCHITECTURE.md` with live hybrid RRF IR metrics (`Recall@3 = 0.9375`, `MRR = 1.0000`, `p95 = 72.217 ms`), and activated GitHub Actions CI + `CycloneDX` SBOM generation.
+- **Traceability:** Branches `feat/cr-014-release-hygiene-gate` (`e75e059`), `feat/cr-015-portfolio-landing-sync` (`4d3c433`), and `CR-016` CI promotion merged via `--no-ff`; releases `v0.6.0`.
+
+### Added
+- `tests/test_release_hygiene.py`: Pre-public tracked-file secret/PII scanner and CI readiness assertions.
+- `docs/ci/ci.yml` -> `.github/workflows/ci.yml` & `scripts/publish_to_github.sh`: Automated CI verification and `CycloneDX` SBOM artifact generation.
+- `README.md` & `docs/ARCHITECTURE.md`: Added empirical hybrid RRF retrieval benchmark table.
+
+### Verification Evidence
+- `./scripts/run_logged.sh cr015_ruff`: `All checks passed!`
+- `./scripts/run_logged.sh cr015_mypy`: `Success: no issues found in 14 source files`
+- `./scripts/run_logged.sh cr015_pytest`: `27 passed, 2 deselected`
+
 ## [0.5.0] - 2026-11-22 — CR-010, CR-011 & CR-013: FastMCP `stdio` Contract Harness & Hybrid RRF Recall@3 / MRR Benchmark Gate
 ### Objective & Risk Mitigated
 - **Closed Residual Risk:** Quantified hybrid retrieval precision (`pgvector` cosine + `tsvector` BM25 fused via `RRF k=60`) against a curated 16-query Golden Dataset over live `hippo <-> rhino` infrastructure, preventing silent context degradation prior to Z3-grounded CV synthesis.
