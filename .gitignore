@@ -8,3 +8,7 @@ __pycache__/
 .hypothesis/
 mcp_config.json
 .venv/
+*~
+.#*
+#*#
+uv.lock
