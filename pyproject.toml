@@ -1,6 +1,6 @@
 [project]
 name = "interview-ops"
-version = "0.1.0"
+version = "0.3.0"
 requires-python = ">=3.12"
 dependencies = [
     "fastmcp>=2.0.0",
@@ -10,6 +10,15 @@ dependencies = [
     "httpx>=0.28.0",
     "psycopg[binary]>=3.2.0",
     "pgvector>=0.3.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "mypy>=1.11.0",
+    "ruff>=0.6.0",
+    "hypothesis>=6.112.0",
 ]
 
 [tool.ruff]
@@ -25,6 +34,11 @@ strict = true
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
+pythonpath = ["src"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
+markers = [
+    "integration: live cluster tests requiring Ollama and/or PostgreSQL",
+]
