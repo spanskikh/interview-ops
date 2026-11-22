@@ -2,6 +2,22 @@
 
 All notable changes and formal Change Requests (CRs) for `interview-ops` are documented in this file.
 
+## [0.5.0] - 2026-11-22 — CR-010, CR-011 & CR-013: FastMCP `stdio` Contract Harness & Hybrid RRF Recall@3 / MRR Benchmark Gate
+### Objective & Risk Mitigated
+- **Closed Residual Risk:** Quantified hybrid retrieval precision (`pgvector` cosine + `tsvector` BM25 fused via `RRF k=60`) against a curated 16-query Golden Dataset over live `hippo <-> rhino` infrastructure, preventing silent context degradation prior to Z3-grounded CV synthesis.
+- **Traceability:** Branches `feat/cr-010-mcp-stdio-contracts` and `feat/cr-011-hybrid-rrf-benchmark` (`4cc9675`) merged via `--no-ff`; releases `v0.5.0`.
+
+### Added
+- `tests/test_mcp_contracts.py`: Real `mcp.client.stdio` discovery, JSON schema checks, `SAT`/`UNSAT` Z3 CV claim auditing, and Pydantic validation error rejection across `hybrid_search_ssot`, `generate_verified_cv_claims`, and `audit_cv_proposal`.
+- `src/interview_ops/rag_store.py`, `src/interview_ops/benchmark.py` & `tests/test_rrf_benchmark.py`: Added `dense_search()` and `lexical_search()` baselines alongside `hybrid_search()`, 12-record SSOT Golden Corpus, 16 curated Golden Queries, `Recall@3`/`MRR`/`p95` evaluator, and `DuckDB` `rag_benchmarks` persistence.
+- `DEVPROCESS.md` & `docs/DEFECTS_AND_CAPA.md` (`CAPA-002`): Codified normative SDLC and English-only Git governance.
+
+### Verification Evidence
+- `./scripts/run_logged.sh cr011_ruff` (`logs/20261122-155239_cr011_ruff.log`): `All checks passed!`
+- `./scripts/run_logged.sh cr011_mypy` (`logs/20261122-155239_cr011_mypy.log`): `Success: no issues found in 13 source files`
+- `./scripts/run_logged.sh cr011_pytest` (`logs/20261122-155240_cr011_pytest.log`): `19 passed, 2 deselected`
+- `./scripts/run_logged.sh cr011_live_rrf` (`logs/20261122-155817_cr011_live_rrf.log`): `1 passed` against live `rhino` `PostgreSQL + pgvector` + `Ollama` (`nomic-embed-text`) — `Recall@3 = 0.9375` (`>= 0.90`), `MRR = 1.0000` (`>= 0.85`), `p95 = 72.217 ms` (`< 150 ms`).
+
 ## [0.4.0] - 2026-11-22 — CR-009: Dev-Process Auditability, Execution Logging & Release Retrospectives
 ### Objective & Risk Mitigated
 - **Closed Residual Risk:** Eliminated loss of iterative engineering history, unlogged local execution runs, and missing post-release retrospectives across `interview-ops` by introducing deterministic `.stdout`/`.stderr`/`.log` capture, versioned `docs/dev-log/` artifacts, and mandatory release retrospectives enforced by automated mutation tests.
