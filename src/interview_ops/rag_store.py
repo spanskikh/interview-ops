@@ -33,8 +33,23 @@ async def embed_text(
     return [float(x) for x in data["embeddings"][0]]
 
 
+def _row_to_record(row: tuple[Any, ...]) -> tuple[ExperienceRecord, float]:
+    skills_raw: Any = row[5]
+    skills = json.loads(skills_raw) if isinstance(skills_raw, str) else list(skills_raw)
+    rec = ExperienceRecord(
+        record_id=str(row[0]),
+        company=str(row[1]),
+        role=str(row[2]),
+        start_year=int(row[3]),
+        end_year=int(row[4]),
+        skills=skills,
+        summary=str(row[6]),
+    )
+    return rec, float(row[7])
+
+
 class PgHybridStore:
-    """Хранилище SSOT в pgvector (rhino) с гибридным поиском RRF (Vector + BM25/tsvector)."""
+    """SSOT store in pgvector (rhino) with hybrid RRF search (Vector + BM25/tsvector)."""
 
     def __init__(self, dsn: str = DEFAULT_DSN) -> None:
         self._dsn = dsn
@@ -94,10 +109,43 @@ class PgHybridStore:
                 ),
             )
 
+    def dense_search(
+        self, query_embedding: list[float], top_k: int = 3
+    ) -> list[tuple[ExperienceRecord, float]]:
+        """Pure dense cosine similarity retrieval over pgvector."""
+        sql = """
+        SELECT record_id, company, role, start_year, end_year,
+               skills_json, summary, 1.0 - (embedding <=> %s::vector) AS cosine_sim
+        FROM ssot_records
+        ORDER BY embedding <=> %s::vector
+        LIMIT %s;
+        """
+        with psycopg.connect(self._dsn) as conn:
+            register_vector(conn)
+            rows = conn.execute(sql, (query_embedding, query_embedding, top_k)).fetchall()
+            return [_row_to_record(row) for row in rows]
+
+    def lexical_search(
+        self, query_text: str, top_k: int = 3
+    ) -> list[tuple[ExperienceRecord, float]]:
+        """Pure lexical full-text retrieval using PostgreSQL tsvector/ts_rank_cd."""
+        sql = """
+        SELECT record_id, company, role, start_year, end_year,
+               skills_json, summary,
+               ts_rank_cd(fts, plainto_tsquery('english', %s)) AS fts_score
+        FROM ssot_records
+        WHERE fts @@ plainto_tsquery('english', %s)
+        ORDER BY fts_score DESC
+        LIMIT %s;
+        """
+        with psycopg.connect(self._dsn) as conn:
+            rows = conn.execute(sql, (query_text, query_text, top_k)).fetchall()
+            return [_row_to_record(row) for row in rows]
+
     def hybrid_search(
         self, query_text: str, query_embedding: list[float], top_k: int = 3
     ) -> list[tuple[ExperienceRecord, float]]:
-        """Reciprocal Rank Fusion (RRF, k=60) поверх cosine distance и ts_rank_cd."""
+        """Reciprocal Rank Fusion (RRF, k=60) over cosine distance and ts_rank_cd."""
         sql = """
         WITH vec_ranked AS (
             SELECT record_id,
@@ -128,21 +176,7 @@ class PgHybridStore:
         ORDER BY f.rrf_score DESC
         LIMIT %s;
         """
-        out: list[tuple[ExperienceRecord, float]] = []
         with psycopg.connect(self._dsn) as conn:
             register_vector(conn)
             rows = conn.execute(sql, (query_embedding, query_text, query_text, top_k)).fetchall()
-            for row in rows:
-                skills_raw: Any = row[5]
-                skills = json.loads(skills_raw) if isinstance(skills_raw, str) else list(skills_raw)
-                rec = ExperienceRecord(
-                    record_id=str(row[0]),
-                    company=str(row[1]),
-                    role=str(row[2]),
-                    start_year=int(row[3]),
-                    end_year=int(row[4]),
-                    skills=skills,
-                    summary=str(row[6]),
-                )
-                out.append((rec, float(row[7])))
-        return out
+            return [_row_to_record(row) for row in rows]
