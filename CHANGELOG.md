@@ -2,6 +2,19 @@
 
 All notable changes and formal Change Requests (CRs) for `interview-ops` are documented in this file.
 
+## [0.9.0] - 2026-11-23 — CR-026: Shared `CycloneDX` PEP 610 `file://` Sanitizer CLI Integration
+### Objective & Risk Mitigated
+- **Closed Residual Risk:** Replaced local inline PEP 610 `file://` SBOM sanitization in `tests/test_sbom_and_contracts.py` with delegation to the shared `sandbox_init.sbom` sanitizer CLI (`CAPA-007`) while retaining an isolated single-repo CI fallback.
+- **Traceability:** Change Request `CR-026` (`tests/test_sbom_and_contracts.py`).
+
+### Added & Changed
+- `tests/test_sbom_and_contracts.py` (`CR-026` / `CAPA-007`): Invokes `python -m sandbox_init.sbom --input ... --output ... --verify --format summary` from sibling `sandbox-init/src` during two-run `CycloneDX` SBOM reproducibility and host-path hygiene verification.
+
+### Verification Evidence
+- `./scripts/run_logged.sh cr026_ruff -- .venv/bin/ruff check src tests`: `All checks passed!` (`0` errors).
+- `./scripts/run_logged.sh cr026_mypy -- .venv/bin/mypy src tests --strict`: `Success: no issues found in 15 source files`.
+- `./scripts/run_logged.sh cr026_pytest -- .venv/bin/pytest -v -m "not integration"`: `31 passed, 2 deselected`.
+
 ## [0.8.0] - 2026-11-23 — CR-022 & CR-023: Cross-Cluster Z3 Contract, SBOM Gate & Rubric Sign-Off
 ### Objective & Risk Mitigated
 - **Closed Residual Risk:** Enforced cross-cluster Z3 RAM budget invariants (`hippo` 24 GiB / `rhino` 16 GiB), 12-tool FastMCP namespace disjointness, deterministic `CycloneDX` SBOM reproducibility, and grammar-constrained live Ollama documentation rubric evaluation (`>= 4/5`).

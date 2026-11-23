@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import subprocess
 import sys
 import tomllib
@@ -135,19 +136,41 @@ def test_cyclonedx_sbom_reproducibility_and_hygiene(tmp_path: Path) -> None:
     if not cdx_bin.is_file():
         pytest.skip("cyclonedx-py not installed in active interpreter")
 
+    shared_src = REPO_ROOT.parent / "sandbox-init" / "src"
     normalized: list[list[tuple[str, str, str]]] = []
     for idx in (1, 2):
         out = tmp_path / f"sbom_{idx}.cdx.json"
         subprocess.run([str(cdx_bin), "environment", "-o", str(out)], cwd=REPO_ROOT, check=True)
-        raw = out.read_text(encoding="utf-8")
-        bom = json.loads(raw)
-        for comp in bom.get("components", []):
-            refs = comp.get("externalReferences", [])
-            comp["externalReferences"] = [
-                r for r in refs if not str(r.get("url", "")).startswith("file://")
-            ]
+        if (shared_src / "sandbox_init" / "sbom.py").is_file():
+            env = dict(os.environ, PYTHONPATH=str(shared_src))
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "sandbox_init.sbom",
+                    "--input",
+                    str(out),
+                    "--output",
+                    str(out),
+                    "--verify",
+                    "--format",
+                    "summary",
+                ],
+                cwd=REPO_ROOT,
+                env=env,
+                check=True,
+            )
+            bom = json.loads(out.read_text(encoding="utf-8"))
+        else:
+            bom = json.loads(out.read_text(encoding="utf-8"))
+            for comp in bom.get("components", []):
+                refs = comp.get("externalReferences", [])
+                comp["externalReferences"] = [
+                    r for r in refs if not str(r.get("url", "")).startswith("file://")
+                ]
         sanitized = json.dumps(bom, sort_keys=True)
         assert "/home/" not in sanitized and "/Users/" not in sanitized
+        assert "file://" not in sanitized
         assert bom["bomFormat"] == "CycloneDX"
         comps = sorted(
             (c["name"], c.get("version", ""), c.get("purl", "")) for c in bom["components"]
